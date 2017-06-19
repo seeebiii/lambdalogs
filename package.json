@@ -1,0 +1,34 @@
+{
+  "name": "lambdalogs",
+  "version": "1.0.0",
+  "description": "A CLI tool to trace AWS Lambda calls over multiple CloudWatch log groups.",
+  "keywords": [
+    "aws",
+    "lambda",
+    "function",
+    "cli",
+    "logs",
+    "lambda-logs",
+    "amazon web services",
+    "cloudformation",
+    "cloudwatch"
+  ],
+  "bin": {
+    "lambdalogs": "./index.js"
+  },
+  "author": "sebastianhesse <info@sebastianhesse.de> (https://www.sebastianhesse.de)",
+  "homepage": "https://github.com/seeebiii/lambdalogs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seeebiii/lambdalogs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seeebiii/lambdalogs/issues"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.72.0",
+    "cli-color": "^1.2.0",
+    "minimist": "^1.2.0"
+  }
+}
