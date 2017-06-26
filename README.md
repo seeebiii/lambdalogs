@@ -40,7 +40,7 @@ lambdalogs
 
 ### Options
 * **--stack** a CloudFormation stack name which contains lambda functions
-* **--filter** a [CloudWatch filter pattern](http://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html)
+* **--filter** a [CloudWatch filter pattern](http://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html). If you need to place your filter pattern into double quotes because of non alphanumeric or underscore characters, you have to  enclose them by single quotes. Like this: `'"SPECIAL-CHAR"'`.
 * **--region** optional: you can set the AWS region for your CloudFormation stack and CloudWatch logs. By default the region configured in your AWS CLI is used. As a fallback 'us-east-1' is used.
 * **--colorPattern** optional: for a colored output, you can set a regex pattern which tries to match your messages and colors the matched output. By default only the timestamp of the log event is colored (see `--color`).
 * **--color** optional: for a colored output, you can set the color of the matched pattern (see `--colorPattern`). The color must be supported by [cli-color](https://www.npmjs.com/package/cli-color).
