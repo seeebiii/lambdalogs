@@ -21,29 +21,36 @@ if (!opts.stack || !opts.filter) {
     return;
 }
 
+const context = {
+    input: {
+        stackName: opts.stack,
+        filterPattern: opts.filter,
+        colorPattern: opts.colorPattern || '',
+        color: opts.color || 'yellow',
+        startTime: getMsFromTimeString(opts.start) || Date.now() - 15 * 60 * 1000,
+        endTime: getMsFromTimeString(opts.end) || Date.now(),
+        msgLength: typeof opts.msgLength === 'number' ? opts.msgLength : 350
+    },
+    functions: [],          // all relevant Lambda functions
+    logGroupNames: [],      // all relevant log group names
+    printedLogEvents: {}    // stores already printed log events, identified by log event id
+};
 
-let stackName = opts.stack;
-let filterPattern = opts.filter;
-let colorPattern = opts.colorPattern || '';
-let color = opts.color || 'yellow';
-let startTime = getMsFromTimeString(opts.start) || Date.now() - 15 * 60 * 1000;
-let endTime = getMsFromTimeString(opts.end) || Date.now();
-let msgLength = typeof opts.msgLength === 'number' ? opts.msgLength : 350;
 
-if (startTime >= endTime) {
+if (context.input.startTime >= context.input.endTime) {
     console.error(`Error: Start time '${opts.start}' may not be after end time '${opts.end}'! Please check your inputs.`);
     return;
 }
 
 let coloredClc = clc.yellow;
-if (clc[color]) {
-    coloredClc = clc[color];
+if (clc[context.input.color]) {
+    coloredClc = clc[context.input.color];
 }
 
 
 // get all resources of the stack
 cf.listStackResources({
-    StackName: stackName
+    StackName: context.input.stackName
 }).promise().then(data => {
     // filter out Lambdas from resources and retrieve their physical resource id's
     const resources = data.StackResourceSummaries;
@@ -86,9 +93,9 @@ cf.listStackResources({
     logGroups.forEach(logGroupName => {
         logEventPromises.push(logs.filterLogEvents({
             logGroupName: logGroupName,
-            startTime: startTime,
-            endTime: endTime,
-            filterPattern: filterPattern
+            startTime: context.input.startTime,
+            endTime: context.input.endTime,
+            filterPattern: context.input.filterPattern
         }).promise());
     });
     return Promise.all(logEventPromises);
@@ -123,18 +130,18 @@ cf.listStackResources({
         let messageString = msg.message;
         let beginning = '';
 
-        if (colorPattern === '') {
+        if (context.input.colorPattern === '') {
             beginning = new Date(msg.timestamp);
         } else {
-            let regex = new RegExp(colorPattern);
+            let regex = new RegExp(context.input.colorPattern);
             let match = messageString.match(regex);
             let end = match.index + match[0].length;
             beginning = messageString.substring(0, end);
             messageString = messageString.substring(end + 1);
         }
 
-        if (msgLength > 0) {
-            messageString = messageString.substring(0, msgLength);
+        if (context.input.msgLength > 0) {
+            messageString = messageString.substring(0, context.input.msgLength);
         }
 
         console.log(coloredClc(beginning) + ' ' + messageString);
