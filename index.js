@@ -42,52 +42,8 @@ if (context.input.startTime >= context.input.endTime) {
     return;
 }
 
-let coloredClc = clc.yellow;
-if (clc[context.input.color]) {
-    coloredClc = clc[context.input.color];
-}
 
-
-// get all resources of the stack
-cf.listStackResources({
-    StackName: context.input.stackName
-}).promise().then(data => {
-    // filter out Lambdas from resources and retrieve their physical resource id's
-    const resources = data.StackResourceSummaries;
-
-    if (!resources) {
-        console.log('No resources available.');
-        return;
-    }
-
-    let lambdaFunctions = resources.filter(elem => {
-        return elem.ResourceType === 'AWS::Lambda::Function';
-    });
-
-    return lambdaFunctions.map(elem => {
-        return elem.PhysicalResourceId;
-    });
-}).then(resourceIds => {
-    // now find all log groups related to the Lambdas
-    let logPromises = [];
-    resourceIds.forEach(resourceId => {
-        logPromises.push(logs.describeLogGroups({
-            logGroupNamePrefix: '/aws/lambda/' + resourceId
-        }).promise());
-    });
-    return Promise.all(logPromises);
-}).then(logGroups => {
-    // now filter out all non-existent log groups
-    let resultLogGroups = [];
-    logGroups.forEach(elem => {
-        if (elem.logGroups.length) {
-            elem.logGroups.forEach(logGroup => {
-                resultLogGroups.push(logGroup.logGroupName);
-            });
-        }
-    });
-    return resultLogGroups;
-}).then(logGroups => {
+prepare().then(logGroups => {
     // now find all log events of a log group filtered by the specified filter pattern
     let logEventPromises = [];
     logGroups.forEach(logGroupName => {
@@ -98,34 +54,82 @@ cf.listStackResources({
             filterPattern: context.input.filterPattern
         }).promise());
     });
-    return Promise.all(logEventPromises);
-}).then(logEvents => {
-    // now retrieve the actual message and its timestamp
-    let outputMessages = [];
-    if (logEvents && logEvents.length) {
-        logEvents.forEach(logEvent => {
-            if (logEvent && logEvent.events) {
-                logEvent.events.forEach(event => {
-                    outputMessages.push({
-                        timestamp: event.timestamp,
-                        message: event.message.trim()
+
+    Promise.all(logEventPromises).then(logEvents => {
+        // now retrieve the actual message and its timestamp
+        let outputMessages = [];
+        if (logEvents && logEvents.length) {
+            logEvents.forEach(logEvent => {
+                if (logEvent && logEvent.events) {
+                    logEvent.events.forEach(event => {
+                        outputMessages.push({
+                            timestamp: event.timestamp,
+                            message: event.message.trim()
+                        });
                     });
+                }
+            });
+        }
+        return outputMessages;
+    }).then(outputMessages => {
+        // use the timestamp to sort the messages in the right order
+        return outputMessages.sort((a, b) => {
+            if (a.timestamp && b.timestamp) {
+                return a.timestamp - b.timestamp;
+            } else {
+                return 0;
+            }
+        });
+    }).then(printSortedMessages);
+}).catch(err => {
+    console.log('An unexpected error occurred while retrieving Lambda logs: ', err);
+});
+
+
+function prepare() {
+    // get all resources of the stack
+    return cf.listStackResources({
+        StackName: context.input.stackName
+    }).promise().then(data => {
+        // filter out Lambdas from resources and retrieve their physical resource id's
+        const resources = data.StackResourceSummaries;
+
+        if (!resources) {
+            throw new Error('No resources available in stack.');
+        }
+
+        let lambdaFunctions = resources.filter(elem => {
+            return elem.ResourceType === 'AWS::Lambda::Function';
+        });
+
+        return lambdaFunctions.map(elem => {
+            return elem.PhysicalResourceId;
+        });
+    }).then(resourceIds => {
+        // now find all log groups related to the Lambdas
+        let logPromises = [];
+        resourceIds.forEach(resourceId => {
+            logPromises.push(logs.describeLogGroups({
+                logGroupNamePrefix: '/aws/lambda/' + resourceId
+            }).promise());
+        });
+        return Promise.all(logPromises);
+    }).then(logGroups => {
+        // now filter out all non-existent log groups
+        let resultLogGroups = [];
+        logGroups.forEach(elem => {
+            if (elem.logGroups.length) {
+                elem.logGroups.forEach(logGroup => {
+                    resultLogGroups.push(logGroup.logGroupName);
                 });
             }
         });
-    }
-    return outputMessages;
-}).then(outputMessages => {
-    // use the timestamp to sort the messages in the right order
-    return outputMessages.sort((a, b) => {
-        if (a.timestamp && b.timestamp) {
-            return a.timestamp - b.timestamp;
-        } else {
-            return 0;
-        }
+        return resultLogGroups;
     });
-}).then(sortedMessages => {
-    // print the messages in a pretty way
+}
+
+
+function printSortedMessages(sortedMessages) {
     sortedMessages.forEach(msg => {
         let messageString = msg.message;
         let beginning = '';
@@ -144,16 +148,14 @@ cf.listStackResources({
             messageString = messageString.substring(0, context.input.msgLength);
         }
 
-        console.log(coloredClc(beginning) + ' ' + messageString);
+        console.log(getColoredClc()(beginning) + ' ' + messageString);
     });
-}).catch(err => {
-    console.log('An unexpected error occurred while retrieving Lambda logs: ', err);
-});
+}
 
 
 /**
- * Gets the AWS region to use for further calls. It's accessing the region configured in AWS CLI if no region parameter was set when calling this CLI tool.
- * Default: 'us-east-1'
+ * Gets the AWS region to use for further calls. It's accessing the region configured in AWS CLI if no region parameter was set when
+ * calling this CLI tool. Default: 'us-east-1'
  * @returns {string} an AWS region
  */
 function getAwsRegion() {
@@ -194,4 +196,13 @@ function getUnitInMs(name) {
         case 'w':
             return ms * 60 * 60 * 24 * 7;
     }
+}
+
+
+function getColoredClc() {
+    let coloredClc = clc.yellow;
+    if (clc[context.input.color]) {
+        coloredClc = clc[context.input.color];
+    }
+    return coloredClc;
 }
