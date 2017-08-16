@@ -36,6 +36,7 @@ lambdalogs
 [--start timestamp] 
 [--end timestamp] 
 [--msgLength messageLength]
+[--poll pollDelay]
 ```
 
 ### Options
@@ -47,6 +48,9 @@ lambdalogs
 * **--start** optional: you can set the start time to begin with the search for log events. By default the last 15 minutes from now will be searched, so `start` is equal to `Date.now() - 15*60*1000`. See also `--end`.
 * **--end** optional: you can set the end time to stop with the search for log events. By default the last 15 minutes from now will be searched, so `end` is equal to `Date.now()`. See also `--start`.
 * **--msgLength** optional: you can set a maximum length for the message output. This means only the first X characters will be printed. `0` means all characters of a message are printed. By default this limit is set to `350`. This is useful to keep an overview if your logs contain lots of data.
+* **--poll** optional: set milliseconds to actively poll for new log events, e.g. `--poll 2000` to poll every 2 seconds. Be aware of the
+[CloudWatch Logs limits](http://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/cloudwatch_limits_cwl.html) for this approach and don't set a too low value!
+I suggest a value `> 2000`, because it also takes some time that the logs arrive in CloudWatch.
 
 
 #### Time Options
@@ -85,6 +89,12 @@ lambdalogs --stack your_stack_name --filter INFO --colorPattern "[0-9]{4}-[0-9]{
 #### Search for logs using a red color for the output
 ```
 lambdalogs --stack your_stack_name --filter INFO --color red
+```
+
+
+#### Poll for logs every 5 seconds
+```
+lambdalogs --stack your_stack_name --filter INFO --poll 5000
 ```
 
 
