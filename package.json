@@ -27,8 +27,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.72.0",
-    "cli-color": "^1.2.0",
-    "minimist": "^1.2.0"
+    "aws-sdk": "^2.810.0",
+    "cli-color": "^2.0.0",
+    "minimist": "^1.2.5"
   }
 }
