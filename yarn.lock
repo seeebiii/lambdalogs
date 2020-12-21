@@ -7,9 +7,9 @@ ansi-regex@^2.1.1:
   resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-2.1.1.tgz#c3b33ab5ee360d86e0e628f0468ae7ef27d654df"
 
 aws-sdk@^2.810.0:
-  version "2.810.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.810.0.tgz#67b11eb7ac6bb967c5fbbdba523872d45cfa52db"
-  integrity sha512-+Sj+Ec00t675/0Kjisk4GIZGs7olsbu4//b5WrwPriYTV/xqJnXCPMpj3EZEV1z5Vx3PZD6dA6PTU4VZPPVcBw==
+  version "2.814.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.814.0.tgz#7a1c36006e0b5826f14bd2511b1d229ef6814bb0"
+  integrity sha512-empd1m/J/MAkL6d9OeRpmg9thobULu0wk4v8W3JToaxGi2TD7PIdvE6yliZKyOVAdJINhBWEBhxR4OUIHhcGbQ==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -138,14 +138,10 @@ ext@^1.1.2:
   dependencies:
     type "^2.0.0"
 
-ieee754@1.1.13:
+ieee754@1.1.13, ieee754@^1.1.4:
   version "1.1.13"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.13.tgz#ec168558e95aa181fd87d37f55c32bbcb6708b84"
   integrity sha512-4vf7I2LYV/HaWerSo3XmlMkp5eZ83i+/CDluXi/IGTs/O1sejBNhTtnxzmRZfvOUqj7lZjqHkeTvpgSFDlWZTg==
-
-ieee754@^1.1.4:
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.8.tgz#be33d40ac10ef1926701f6f08a2d86fbfd1ad3e4"
 
 is-promise@^2.1:
   version "2.1.0"
